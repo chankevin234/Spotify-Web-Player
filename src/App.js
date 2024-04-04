@@ -1,24 +1,31 @@
-import logo from './logo.svg';
+// IMPORTS HERE
+import React, { useState, useEffect } from 'react';
+import WebPlayback from './WebPlayback'
+import Login from './Login';
 import './App.css';
 
 function App() {
+  const [token, setToken] = useState('');
+
+  // useEffect hook sends a GET request to the /auth/token endpoint to check if we have a valid access_token already requested
+  useEffect(() => {
+    async function getToken() {
+      const response = await fetch('/auth/token');
+      const json = await response.json();
+      setToken(json.access_token); // access_token is stored using the setToken()
+    }
+
+    getToken(); // actual run here
+  }, []);
+
+  /**
+   * Login component will be loaded IF access_token is still EMPTY.
+   * IF access_token already requested (active session ongoing), WebPlayback component loads
+   */
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {(token === '') ? <Login /> : <WebPlayback token={token} />}
+    </>
   );
 }
 
