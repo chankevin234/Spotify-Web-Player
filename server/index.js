@@ -6,10 +6,12 @@
 const express = require('express'); // receive and handle all incoming requests to the server.
 const dotenv = require('dotenv'); // access env variables
 const request = require('request'); // used for POST HTTP calls
+// const { createProxyMiddleware } = require('http-proxy-middleware');
+
 // set localhost port
 const port = 5000;
 
-// global.access_token = ''
+global.access_token = ''
 
 // retrieve .env values HERE
 dotenv.config()
@@ -23,7 +25,7 @@ var generateRandomString = function (length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
@@ -31,6 +33,8 @@ var generateRandomString = function (length) {
 
 // AUTHORIZATION FLOW BELOW
 var app = express();
+app.use(express.static(path.join(__dirname, '../build'))); //From now on, we can run the server and load files directly from the server
+
 /**
  * STEP 1: Request User Authorization 
  *  - Redirect the user to web page where they can choose to grant our application access to their premium account.
@@ -42,6 +46,7 @@ var app = express();
  *      5) redirect_uri = URL you are redirected after access token is granted 
  */
 app.get('/auth/login', (req, res) => {
+  console.log(spotify_client_id, spotify_client_secret)
 
   var scope = "streaming user-read-email user-read-private"
 
@@ -55,8 +60,10 @@ app.get('/auth/login', (req, res) => {
     state: state
   })
 
+  console.log(auth_query_parameters.toString());
   res.redirect('https://accounts.spotify.com/authorize/?' + auth_query_parameters.toString());
-})
+  // console.log("You have successfully logged into the OAuth page!")
+});
 /**
  * STEP 2: Request Access Token
  *  Use the acquired auth code to get an Access Token and make a POST req to /api/token endpoint (3 params):
@@ -65,6 +72,7 @@ app.get('/auth/login', (req, res) => {
  *  3) redirect_uri
  */
 app.get('/auth/callback', (req, res) => {
+  console.log("Requesting http://localhost:3000/auth/callback");
 
   var code = req.query.code;
 
@@ -77,14 +85,19 @@ app.get('/auth/callback', (req, res) => {
     },
     headers: {
       'Authorization': 'Basic ' + (Buffer.from(spotify_client_id + ':' + spotify_client_secret).toString('base64')),
-      'Content-Type' : 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
     json: true
   };
 
-  request.post(authOptions, function(error, response, body) {
+  console.log("POSTING!", authOptions);
+  request.post(authOptions, function (error, response, body) {
+    console.log("POSTING!", authOptions);
+
     if (!error && response.statusCode === 200) {
-      var access_token = body.access_token;
+      console.log("No Error _ statuscode 2000!");
+      access_token = body.access_token;
+      console.log(access_token);
       res.redirect('/')
     }
   });
@@ -95,7 +108,7 @@ app.get('/auth/callback', (req, res) => {
  *  - sent to /auth/token endpoint
  */
 app.get('/auth/token', (req, res) => {
-  res.json({ access_token: access_token})
+  res.json({ access_token: access_token })
 })
 
 app.listen(port, () => {
@@ -103,10 +116,10 @@ app.listen(port, () => {
 })
 
 // app.get('/', (req, res) => {
-//     console.log('ROOT response!');
-//     res.send('ROOT/HOME! Root response!!')
+//   console.log('ROOT response!');
+//   res.send('ROOT/HOME! Root response!!')
 // });
 
 // app.get('*', (req, res) => {
-//     res.send('UNKNOWN PATH!');
+//   res.send('UNKNOWN PATH!');
 // });

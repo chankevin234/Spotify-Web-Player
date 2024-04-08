@@ -7,11 +7,12 @@
 import React from 'react';
 
 function Login() {
+    console.log("REDIRECTING TO OAUTH PAGE")
     return (
-        <div className="App">
+        <div className="App" >
             <header className="App-header">
                 <a className="btn-spotify" href="/auth/login" >
-                    Login with Spotify 
+                    Login with Spotify
                 </a>
             </header>
         </div>

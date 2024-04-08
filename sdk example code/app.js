@@ -17,7 +17,7 @@
  * 3) 'volume' of player
  */
 window.onSpotifyWebPlaybackSDKReady = () => {
-    const token = 'BQAqJf0TptdbH-7K3LAnMbTNSS7KX0V_zcbklvNRas67KmB1HfBbYuvGXanMQTmPsFHFDQD_t2MhJ4smGt0zF1_038iaCypP4pkIAOskd3mxI6RSrHU7L0XcNX_iTj7uZ5NmWA2XjU3kfEVWJA_j74IFQ6imKDevASnRp_UlW_NcBFIuo0kFd4qD3hSJeWyFWjAx5Xti9g';
+    const token = 'BQDpfAFXpZP5vwj9aC1NHai-i6ycnH7GwwtnMbKVcoHGGhrmP1Gho3CmSFL3jA4gpe622rFry1U-ktfsjb8cQewX0QowXLVBrk0zDNbxNq_wlqfOXa4Fyo-98ePLf6FTgkfSSX76y2FMydPjLwjWxIHN34IgmZX8xhPJ8ZPuYV-h05ytKgyuWGBBppffoTIY46bI3MZSww';
     const player = new Spotify.Player({
         name: 'Kevin SDK Quick Start Player',
         getOAuthToken: cb => { cb(token); },
