@@ -19,7 +19,10 @@ function WebPlayback(props) {
      * is_active to indicate whether the current playback has been transferred to this player or not.
      * current_track, an object to store the currently playing track.
      */
-    const [player, setPlayer] = useState(undefined);
+    const [player, setPlayer] = useState(undefined); // determines if the player has casted to Spotify Player
+    /**
+     * Determines the play/stop/skip for the webplayer
+     */
     const [is_paused, setPaused] = useState(false);
     const [is_active, setActive] = useState(false);
     const [current_track, setTrack] = useState(track);
@@ -35,7 +38,7 @@ function WebPlayback(props) {
         window.onSpotifyWebPlaybackSDKReady = () => {
 
             const player = new window.Spotify.Player({
-                name: 'Web Playback SDK',
+                name: 'Kevin Spotify Web App',
                 getOAuthToken: cb => { cb(props.token); },
                 volume: 0.5
             });
@@ -50,61 +53,74 @@ function WebPlayback(props) {
                 console.log('Device ID has gone offline', device_id);
             });
 
-            player.addListener('player_state_changed', (state => {
-
+            player.addListener('player_state_changed', ((state) => {
                 if (!state) {
                     return;
                 }
+                console.log('track:');
+                console.log(state.track_window.current_track);
 
                 setTrack(state.track_window.current_track);
                 setPaused(state.paused);
 
+                player.getCurrentState().then((state) => {
+                    if (!state) {
+                        console.error('User is not playing music through the Web Playback SDK');
+                        return;
+                    }
 
-                player.getCurrentState().then(state => {
+                    var current_track = state.track_window.current_track;
+                    var next_track = state.track_window.next_tracks[0];
+
+                    console.log('Currently Playing', current_track);
+                    console.log('Playing Next', next_track);
+
                     (!state) ? setActive(false) : setActive(true)
                 });
 
             }));
-
-
-
             player.connect();
-
         };
     }, []);
-    console.log("WEBPLAYBACK");
 
-    return (
-        <>
-            <div className="container">
-                <div className="main-wrapper">
-                    <img src={current_track.album.images[0].url}
-                        className="now-playing__cover" alt="" />
-
-                    <div className="now-playing__side">
-                        <div className="now-playing__name">{
-                            current_track.name
-                        }</div>
-
-                        <div className="now-playing__artist">{
-                            current_track.artists[0].name
-                        }</div>
-                        <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
-                            &lt;&lt;
-                        </button>
-
-                        <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
-                            {is_paused ? "PLAY" : "PAUSE"}
-                        </button>
-
-                        <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
-                            &gt;&gt;
-                        </button>
+    if (!is_active) {
+        return (
+            <>
+                <div className="container">
+                    <div className="main-wrapper">
+                        <b> Instance not active. Transfer your playback using your Spotify app </b>
                     </div>
                 </div>
-            </div>
-        </>
-    );
+            </>)
+    } else {
+        return (
+            <>
+                <div className="container">
+                    <div className="main-wrapper">
+
+                        <img src={current_track.album.images[0].url} className="now-playing__cover" alt="" />
+
+                        <div className="now-playing__side">
+                            <div className="now-playing__name">{current_track.name}</div>
+                            <div className="now-playing__artist">{current_track.artists[0].name}</div>
+
+                            <button className="btn-spotify" onClick={() => { player.previousTrack() }} >
+                                &lt;&lt;
+                            </button>
+
+                            <button className="btn-spotify" onClick={() => { player.togglePlay() }} >
+                                {is_paused ? "PLAY" : "PAUSE"}
+                            </button>
+
+                            <button className="btn-spotify" onClick={() => { player.nextTrack() }} >
+                                &gt;&gt;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
 };
 
 export default WebPlayback;

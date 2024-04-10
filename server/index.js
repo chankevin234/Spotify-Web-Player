@@ -6,7 +6,7 @@
 const express = require('express'); // receive and handle all incoming requests to the server.
 const dotenv = require('dotenv'); // access env variables
 const request = require('request'); // used for POST HTTP calls
-// const { createProxyMiddleware } = require('http-proxy-middleware');
+var querystring = require('querystring');
 
 // set localhost port
 const port = 5000;
@@ -33,7 +33,11 @@ var generateRandomString = function (length) {
 
 // AUTHORIZATION FLOW BELOW
 var app = express();
-app.use(express.static(path.join(__dirname, '../build'))); //From now on, we can run the server and load files directly from the server
+// app.use(express.static(path.join(__dirname, '../build'))); //From now on, we can run the server and load files directly from the server
+
+app.listen(port, () => {
+  console.log(`Listening at http://localhost:${port}`)
+})
 
 /**
  * STEP 1: Request User Authorization 
@@ -45,23 +49,23 @@ app.use(express.static(path.join(__dirname, '../build'))); //From now on, we can
  *      4) client_id = client id of app
  *      5) redirect_uri = URL you are redirected after access token is granted 
  */
-app.get('/auth/login', (req, res) => {
+app.get('/login', (req, res) => {
   console.log(spotify_client_id, spotify_client_secret)
 
   var scope = "streaming user-read-email user-read-private"
 
   var state = generateRandomString(16);
 
-  var auth_query_parameters = new URLSearchParams({
-    response_type: "code",
+  var auth_query_parameters = querystring.stringify({
+    response_type: 'code',
     client_id: spotify_client_id,
     scope: scope,
     redirect_uri: spotify_redirect_uri,
     state: state
   })
 
-  console.log(auth_query_parameters.toString());
-  res.redirect('https://accounts.spotify.com/authorize/?' + auth_query_parameters.toString());
+  // console.log(auth_query_parameters.toString());
+  res.redirect('https://accounts.spotify.com/authorize/?' + auth_query_parameters);
   // console.log("You have successfully logged into the OAuth page!")
 });
 /**
@@ -71,7 +75,7 @@ app.get('/auth/login', (req, res) => {
  *  2) code = auth code
  *  3) redirect_uri
  */
-app.get('/auth/callback', (req, res) => {
+app.get('/callback', (req, res) => {
   console.log("Requesting http://localhost:3000/auth/callback");
 
   var code = req.query.code;
@@ -92,10 +96,8 @@ app.get('/auth/callback', (req, res) => {
 
   console.log("POSTING!", authOptions);
   request.post(authOptions, function (error, response, body) {
-    console.log("POSTING!", authOptions);
-
     if (!error && response.statusCode === 200) {
-      console.log("No Error _ statuscode 2000!");
+      console.log("No Error _ statuscode 200!");
       access_token = body.access_token;
       console.log(access_token);
       res.redirect('/')
@@ -107,12 +109,9 @@ app.get('/auth/callback', (req, res) => {
  * STEP 3: Return Access Token
  *  - sent to /auth/token endpoint
  */
-app.get('/auth/token', (req, res) => {
+app.get('/token', (req, res) => {
+  console.log("Refreshing Token!");
   res.json({ access_token: access_token })
-})
-
-app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`)
 })
 
 // app.get('/', (req, res) => {

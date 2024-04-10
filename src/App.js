@@ -9,12 +9,12 @@ function App() {
 
   // useEffect hook sends a GET request to the /auth/token endpoint to check if we have a valid access_token already requested
   useEffect(() => {
-    console.log("APP.JS useEffect()!");
+    // console.log("APP.JS useEffect()!");
     async function getToken() {
       const response = await fetch('/auth/token');
       const json = await response.json();
       setToken(json.access_token); // access_token is stored using the setToken()
-      console.log(json.access_token);
+      // console.log(json.access_token);
     }
 
     getToken(); // actual run here
